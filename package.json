@@ -1,0 +1,22 @@
+{
+    "name": "naive",
+    "version": "1.0.1",
+    "description": "A simple Node app built on Express, instantly up and running.",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js"
+    },
+    "dependencies": {
+      "express": "^4.17.1",
+      "superagent": "^5.2.1"
+    },
+    "engines": {
+      "node": "10.x"
+    },
+    "license": "MIT",
+    "keywords": [
+      "node",
+      "express"
+    ]
+  }
+  
