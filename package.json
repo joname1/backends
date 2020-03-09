@@ -2,17 +2,14 @@
   "name": "express-example-starter",
   "version": "1.0.0",
   "description": "An Express-based application skeleton",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "nodemon ."
   },
   "dependencies": {
     "express": "^4.17.1",
     "superagent": "^5.2.1",
     "axios": "^0.19.2"
-  },
-  "engines": {
-    "node": "10.x"
   },
   "keywords": ["expressjs", "express"]
 }

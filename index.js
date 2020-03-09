@@ -121,7 +121,7 @@ app.get("/api/v2/ncov_cases/timeline/page=:id", (req, res) => {
         }
       }
       let rebuild = {
-        status: 200,
+        status: res.statusCode,
         data: moth
       };
       res.send(rebuild);
@@ -175,7 +175,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
               deathsArry.push(item.attributes.Deaths);
             });
             let rebuild = {
-              status: 200,
+              status: res.statusCode,
               update: t,
               confirmed: utils.calcSum(confirmedArry),
               recovered: utils.calcSum(recoveredArry),
@@ -196,7 +196,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
       )
       .then(ress => {
         let rebuild = {
-          status: 200,
+          status: res.statusCode,
           data: ress.data.features
         };
 
@@ -213,7 +213,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
       )
       .then(ress => {
         let rebuild = {
-          status: 200,
+          status: res.statusCode,
           data: ress.data.features
         };
 
@@ -241,7 +241,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
         });
 
         let rebuild = {
-          status: 200,
+          status: res.statusCode,
           data: {
             time: dateArry,
             china: chinaArry,
@@ -278,7 +278,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
         });
 
         let rebuild = {
-          status: 200,
+          status: res.statusCode,
           type: "FeatureCollection",
           features: ok
         };
@@ -289,7 +289,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send('status: 200')
+  res.send('Status:' + res.statusCode)
 });
 
 let listener = app.listen(8080, function() {
