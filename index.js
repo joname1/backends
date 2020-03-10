@@ -9,7 +9,7 @@ const HostAPI = "https://ncov.html5.qq.com";
 const JHUAPI =
   "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services";
 const TechAPI = "https://mainssl.geekpark.net";
-const TimeAPI = "http://h5.oeeee.com";
+const TimeAPI = "http://m.mp.oeeee.com";
 
 app.all("*", (req, res, next) => {
   if (!req.get("Origin")) return next();
@@ -121,7 +121,7 @@ app.get("/api/v2/ncov_cases/timeline/page=:id", (req, res) => {
         }
       }
       let rebuild = {
-        status: res.statusCode,
+        status: 200,
         data: moth
       };
       res.send(rebuild);
@@ -175,7 +175,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
               deathsArry.push(item.attributes.Deaths);
             });
             let rebuild = {
-              status: res.statusCode,
+              status: 200,
               update: t,
               confirmed: utils.calcSum(confirmedArry),
               recovered: utils.calcSum(recoveredArry),
@@ -196,7 +196,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
       )
       .then(ress => {
         let rebuild = {
-          status: res.statusCode,
+          status: 200,
           data: ress.data.features
         };
 
@@ -213,7 +213,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
       )
       .then(ress => {
         let rebuild = {
-          status: res.statusCode,
+          status: 200,
           data: ress.data.features
         };
 
@@ -241,7 +241,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
         });
 
         let rebuild = {
-          status: res.statusCode,
+          status: 200,
           data: {
             time: dateArry,
             china: chinaArry,
@@ -278,7 +278,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
         });
 
         let rebuild = {
-          status: res.statusCode,
+          status: 200,
           type: "FeatureCollection",
           features: ok
         };
@@ -289,7 +289,7 @@ app.get("/api/v2/ncov_cases/:id", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send('Status:' + res.statusCode)
+  res.send('Status: 404')
 });
 
 let listener = app.listen(8080, function() {
