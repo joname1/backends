@@ -146,152 +146,151 @@ app.get("/api/getStatusByPosition", (req, res) => {
   });
 });
 
-app.get("/api/v2/ncov_cases/:id", (req, res) => {
+//首页数据
+app.get("/api/v2/ncov_cases/0", (req, res) => {
   let t;
-  //首页数据
-  if (req.params.id === "0") {
-    axios
-      .get(JHUAPI + "/cases_time_v2/FeatureServer/0?f=json")
-      .then(res => {
-        t = utils.dateFormat(
-          res.data.editingInfo.lastEditDate,
-          "yyyy-MM-dd hh:mm:ss"
-        );
-      })
-      .then(() => {
-        axios
-          .get(
-            JHUAPI +
-              "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
-          )
-          .then(ress => {
-            let confirmedArry = [],
-              deathsArry = [],
-              recoveredArry = [];
-            let datas = ress.data;
-            datas.features.map(item => {
-              confirmedArry.push(item.attributes.Confirmed);
-              recoveredArry.push(item.attributes.Recovered);
-              deathsArry.push(item.attributes.Deaths);
-            });
-            let rebuild = {
-              status: 200,
-              update: t,
-              confirmed: utils.calcSum(confirmedArry),
-              recovered: utils.calcSum(recoveredArry),
-              deaths: utils.calcSum(deathsArry)
-            };
-
-            res.send(rebuild);
-          });
-      });
-  }
-
-  //全球确诊数据
-  if (req.params.id === "1") {
-    axios
-      .get(
-        JHUAPI +
-          "/ncov_cases/FeatureServer/2/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc"
-      )
-      .then(ress => {
-        let rebuild = {
-          status: 200,
-          data: ress.data.features
-        };
-
-        res.send(rebuild);
-      });
-  }
-
-  //国内确诊数据
-  if (req.params.id === "2") {
-    axios
-      .get(
-        JHUAPI +
+  axios
+    .get(JHUAPI + "/cases_time_v2/FeatureServer/0?f=json")
+    .then(res => {
+      t = utils.dateFormat(
+        res.data.editingInfo.lastEditDate,
+        "yyyy-MM-dd hh:mm:ss"
+      );
+    })
+    .then(() => {
+      axios
+        .get(
+          JHUAPI +
           "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
-      )
-      .then(ress => {
-        let rebuild = {
-          status: 200,
-          data: ress.data.features
-        };
-
-        res.send(rebuild);
-      });
-  }
-
-  //趋势图
-  if (req.params.id === "3") {
-    axios
-      .get(
-        JHUAPI +
-          "/cases_time_v3/FeatureServer/0/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Report_Date_String%20asc"
-      )
-      .then(ress => {
-        let dateArry = [],
-          chinaArry = [],
-          otherArry = [];
-        ress.data.features.map(item => {
-          dateArry.push(
-            utils.dateFormat(item.attributes.Report_Date, "MM月dd日")
-          );
-          chinaArry.push(item.attributes.Mainland_China);
-          otherArry.push(item.attributes.Other_Locations);
-        });
-
-        let rebuild = {
-          status: 200,
-          data: {
-            time: dateArry,
-            china: chinaArry,
-            other: otherArry
-          }
-        };
-
-        res.send(rebuild);
-      });
-  }
-
-  //全球地图
-  if (req.params.id === "4") {
-    axios
-      .get(
-        JHUAPI +
-          "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
-      )
-      .then(ress => {
-        let dad = ress.data.features;
-        let ok = [];
-        dad.map(i => {
-          let son = i.attributes;
-          ok.push({
-            geometry: {
-              type: "Point",
-              coordinates: [son.Long_, son.Lat]
-            },
-            properties: {
-              confirmed: son.Confirmed,
-              country: son.Province_State || son.Country_Region
-            }
+        )
+        .then(ress => {
+          let confirmedArry = [],
+            deathsArry = [],
+            recoveredArry = [];
+          let datas = ress.data;
+          datas.features.map(item => {
+            confirmedArry.push(item.attributes.Confirmed);
+            recoveredArry.push(item.attributes.Recovered);
+            deathsArry.push(item.attributes.Deaths);
           });
+          let rebuild = {
+            status: 200,
+            update: t,
+            confirmed: utils.calcSum(confirmedArry),
+            recovered: utils.calcSum(recoveredArry),
+            deaths: utils.calcSum(deathsArry)
+          };
+
+          res.send(rebuild);
         });
-
-        let rebuild = {
-          status: 200,
-          type: "FeatureCollection",
-          features: ok
-        };
-
-        res.send(rebuild);
-      });
-  }
+    });
 });
+
+//全球确诊数据
+app.get("/api/v2/ncov_cases/1", (req, res) => {
+  axios
+    .get(
+      JHUAPI +
+      "/ncov_cases/FeatureServer/2/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc"
+    )
+    .then(ress => {
+      let rebuild = {
+        status: 200,
+        data: ress.data.features
+      };
+
+      res.send(rebuild);
+    });
+});
+
+//国内确诊数据
+app.get("/api/v2/ncov_cases/2", (req, res) => {
+  axios
+    .get(
+      JHUAPI +
+      "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
+    )
+    .then(ress => {
+      let rebuild = {
+        status: 200,
+        data: ress.data.features
+      };
+
+      res.send(rebuild);
+    });
+});
+
+//趋势图
+app.get("/api/v2/ncov_cases/3", (req, res) => {
+  axios
+    .get(
+      JHUAPI +
+      "/cases_time_v3/FeatureServer/0/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Report_Date_String%20asc"
+    )
+    .then(ress => {
+      let dateArry = [],
+        chinaArry = [],
+        otherArry = [];
+      ress.data.features.map(item => {
+        dateArry.push(
+          utils.dateFormat(item.attributes.Report_Date, "MM月dd日")
+        );
+        chinaArry.push(item.attributes.Mainland_China);
+        otherArry.push(item.attributes.Other_Locations);
+      });
+
+      let rebuild = {
+        status: 200,
+        data: {
+          time: dateArry,
+          china: chinaArry,
+          other: otherArry
+        }
+      };
+
+      res.send(rebuild);
+    });
+});
+
+//全球地图
+app.get("/api/v2/ncov_cases/4", (req, res) => {
+  axios
+    .get(
+      JHUAPI +
+      "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
+    )
+    .then(ress => {
+      let dad = ress.data.features;
+      let ok = [];
+      dad.map(i => {
+        let son = i.attributes;
+        ok.push({
+          geometry: {
+            type: "Point",
+            coordinates: [son.Long_, son.Lat]
+          },
+          properties: {
+            confirmed: son.Confirmed,
+            country: son.Province_State || son.Country_Region
+          }
+        });
+      });
+
+      let rebuild = {
+        status: 200,
+        type: "FeatureCollection",
+        features: ok
+      };
+
+      res.send(rebuild);
+    });
+});
+
 
 app.get("/", (req, res) => {
-  res.send('Status: 404')
+  res.send('Status: 251')
 });
 
-let listener = app.listen(8080, function() {
+let listener = app.listen(8080, function () {
   console.log("Listening on port " + listener.address().port);
 });
