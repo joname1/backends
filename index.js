@@ -2,6 +2,9 @@ const express = require("express");
 const request = require("superagent");
 const axios = require("axios");
 const utils = require("./utils");
+const fs = require('fs');
+const path = require('path');
+const schedule = require('node-schedule');
 
 const app = express();
 
@@ -124,6 +127,11 @@ app.get("/api/v2/ncov_cases/timeline/page=:id", (req, res) => {
         status: 200,
         data: moth
       };
+
+      let objs = JSON.stringify(rebuild)
+      fs.writeFile(`${__dirname}` + '/time' + req.params.id + '.json', objs, 'utf8', () => {
+        console.log('ok+' + new Date())
+      });
       res.send(rebuild);
     });
 });
@@ -148,147 +156,146 @@ app.get("/api/getStatusByPosition", (req, res) => {
 
 //首页数据
 app.get("/api/v2/ncov_cases/0", (req, res) => {
-  let t;
-  axios
-    .get(JHUAPI + "/cases_time_v2/FeatureServer/0?f=json")
-    .then(res => {
-      t = utils.dateFormat(
-        res.data.editingInfo.lastEditDate,
-        "yyyy-MM-dd hh:mm:ss"
-      );
-    })
-    .then(() => {
-      axios
-        .get(
-          JHUAPI +
-          "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
-        )
-        .then(ress => {
-          let confirmedArry = [],
-            deathsArry = [],
-            recoveredArry = [];
-          let datas = ress.data;
-          datas.features.map(item => {
-            confirmedArry.push(item.attributes.Confirmed);
-            recoveredArry.push(item.attributes.Recovered);
-            deathsArry.push(item.attributes.Deaths);
-          });
-          let rebuild = {
-            status: 200,
-            update: t,
-            confirmed: utils.calcSum(confirmedArry),
-            recovered: utils.calcSum(recoveredArry),
-            deaths: utils.calcSum(deathsArry)
-          };
-
-          res.send(rebuild);
-        });
-    });
+  // let paths = path.join(`${__dirname}`, '/0.json')
+  fs.readdir('/tmp', 'utf8', (err, data)=> {
+    res.send(data);
+  })
 });
 
-//全球确诊数据
-app.get("/api/v2/ncov_cases/1", (req, res) => {
-  axios
-    .get(
-      JHUAPI +
-      "/ncov_cases/FeatureServer/2/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc"
-    )
-    .then(ress => {
-      let rebuild = {
-        status: 200,
-        data: ress.data.features
-      };
-
-      res.send(rebuild);
-    });
-});
-
-//国内确诊数据
-app.get("/api/v2/ncov_cases/2", (req, res) => {
-  axios
-    .get(
-      JHUAPI +
-      "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
-    )
-    .then(ress => {
-      let rebuild = {
-        status: 200,
-        data: ress.data.features
-      };
-
-      res.send(rebuild);
-    });
-});
 
 //趋势图
-app.get("/api/v2/ncov_cases/3", (req, res) => {
-  axios
-    .get(
-      JHUAPI +
-      "/cases_time_v3/FeatureServer/0/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Report_Date_String%20asc"
-    )
-    .then(ress => {
-      let dateArry = [],
-        chinaArry = [],
-        otherArry = [];
-      ress.data.features.map(item => {
-        dateArry.push(
-          utils.dateFormat(item.attributes.Report_Date, "MM月dd日")
-        );
-        chinaArry.push(item.attributes.Mainland_China);
-        otherArry.push(item.attributes.Other_Locations);
-      });
-
-      let rebuild = {
-        status: 200,
-        data: {
-          time: dateArry,
-          china: chinaArry,
-          other: otherArry
-        }
-      };
-
-      res.send(rebuild);
-    });
+app.get("/api/v2/ncov_cases/1", (req, res) => {
+  // let paths = path.join(`${__dirname}`, '/1.json')
+  res.sendFile('/tmp/0.json');
 });
 
 //全球地图
-app.get("/api/v2/ncov_cases/4", (req, res) => {
-  axios
-    .get(
-      JHUAPI +
-      "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
-    )
-    .then(ress => {
-      let dad = ress.data.features;
-      let ok = [];
-      dad.map(i => {
-        let son = i.attributes;
-        ok.push({
-          geometry: {
-            type: "Point",
-            coordinates: [son.Long_, son.Lat]
-          },
-          properties: {
-            confirmed: son.Confirmed,
-            country: son.Province_State || son.Country_Region
-          }
-        });
-      });
-
-      let rebuild = {
-        status: 200,
-        type: "FeatureCollection",
-        features: ok
-      };
-
-      res.send(rebuild);
-    });
+app.get("/api/v2/ncov_cases/2", (req, res) => {
+  let paths = path.join(`${__dirname}`, '/2.json')
+  res.sendFile(paths);
 });
 
+//定时器
+const get0 = () => {
+  schedule.scheduleJob('*/1 * * * *', () => {
+    axios.get('https://m.sm.cn/api/rest?format=json&method=Huoshenshan.healingLocal&uc_param_str=gi').then((i) => {
+      let today = {
+        time: i.data.time,
+        y_sure_cnt: i.data.colums[0].list[0].incr,
+        y_cure_cnt: i.data.colums[0].list[2].incr,
+        y_die_cnt: i.data.colums[0].list[3].incr,
+        t_sure_cnt: i.data.colums[0].list[0].current,
+        t_cure_cnt: i.data.colums[0].list[2].current,
+        t_die_cnt: i.data.colums[0].list[3].current
+      }
+      axios.get('https://api.m.sm.cn/rest?format=json&method=Huoshenshan.healingCity&mapType=1').then((ress) => {
+        let rebuild = {
+          domestic: {
+            info: today,
+            list: ress.data.list
+          },
+          foreign: ress.data.foreign
+        }
+
+        // let paths = path.join(`${__dirname}`, '/0.json');
+        let objs = JSON.stringify(rebuild)
+
+        fs.writeFile('/tmp/0.json', objs, 'utf8', () => {
+          console.log('ok+' + new Date())
+        });
+      })
+    })
+
+  });
+}
+
+const get1 = () => {
+  schedule.scheduleJob('*/5 * * * *', () => {
+    axios
+      .get(
+        JHUAPI +
+        "/cases_time_v3/FeatureServer/0/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Report_Date_String%20asc"
+      )
+      .then(ress => {
+        let dateArry = [],
+          chinaArry = [],
+          otherArry = [],
+          totalCArry = [],
+          totalRArry = []
+        ress.data.features.map(item => {
+          dateArry.push(
+            utils.dateFormat(item.attributes.Report_Date, "MM月dd日")
+          );
+          chinaArry.push(item.attributes.Mainland_China);
+          otherArry.push(item.attributes.Other_Locations);
+          totalCArry.push(item.attributes.Total_Confirmed)
+          totalRArry.push(item.attributes.Total_Recovered)
+        });
+
+        let rebuild = {
+          status: 200,
+          data: {
+            time: dateArry,
+            china: chinaArry,
+            other: otherArry,
+            total_confirmed: totalCArry,
+            total_recovered: totalRArry
+          }
+        };
+
+        let objs = JSON.stringify(rebuild)
+
+        fs.writeFile('/tmp/2.json', objs, 'utf8', () => {
+          console.log('ok+' + new Date())
+        });
+      });
+  });
+}
+const get2 = () => {
+  schedule.scheduleJob('*/5 * * * *', () => {
+    axios
+      .get(
+        JHUAPI +
+        "/ncov_cases/FeatureServer/1/query?f=json&where=1=1&returnGeometry=false&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc"
+      )
+      .then(ress => {
+        let dad = ress.data.features;
+        let ok = [];
+        dad.map(i => {
+          let son = i.attributes;
+          ok.push({
+            geometry: {
+              type: "Point",
+              coordinates: [son.Long_, son.Lat]
+            },
+            properties: {
+              confirmed: son.Confirmed,
+              country: son.Province_State || son.Country_Region
+            }
+          });
+        });
+
+        let rebuild = {
+          status: 200,
+          type: "FeatureCollection",
+          features: ok
+        };
+
+        let objs = JSON.stringify(rebuild)
+
+        fs.writeFile('/tmp/2.json', objs, 'utf8', () => {
+          console.log('ok+' + new Date())
+        });
+      });
+  });
+}
+
+get0();
+get1();
+get2();
 
 app.get("/", (req, res) => {
-  res.send('Status: 251')
+  res.send('Status: 451')
 });
 
 let listener = app.listen(8080, function () {
