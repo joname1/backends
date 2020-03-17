@@ -154,30 +154,34 @@ app.get("/api/getStatusByPosition", (req, res) => {
   });
 });
 
-//首页数据
-app.get("/api/v2/ncov_cases/0", (req, res) => {
-  // let paths = path.join(`${__dirname}`, '/0.json')
+//show
+app.get("/show", (req, res) => {
   fs.readdir('/tmp', 'utf8', (err, data)=> {
     res.send(data);
   })
 });
 
 
+//首页数据
+app.get("/api/v2/ncov_cases/0", (req, res) => {
+  res.sendFile('/tmp/0.json');
+});
+
+
 //趋势图
 app.get("/api/v2/ncov_cases/1", (req, res) => {
   // let paths = path.join(`${__dirname}`, '/1.json')
-  res.sendFile('/tmp/0.json');
+  res.sendFile('/tmp/1.json');
 });
 
 //全球地图
 app.get("/api/v2/ncov_cases/2", (req, res) => {
-  let paths = path.join(`${__dirname}`, '/2.json')
-  res.sendFile(paths);
+  res.sendFile('/tmp/2.json');
 });
 
 //定时器
 const get0 = () => {
-  schedule.scheduleJob('*/1 * * * *', () => {
+  schedule.scheduleJob('*/15 * * * *', () => {
     axios.get('https://m.sm.cn/api/rest?format=json&method=Huoshenshan.healingLocal&uc_param_str=gi').then((i) => {
       let today = {
         time: i.data.time,
@@ -210,7 +214,7 @@ const get0 = () => {
 }
 
 const get1 = () => {
-  schedule.scheduleJob('*/5 * * * *', () => {
+  schedule.scheduleJob('*/15 * * * *', () => {
     axios
       .get(
         JHUAPI +
@@ -252,7 +256,7 @@ const get1 = () => {
   });
 }
 const get2 = () => {
-  schedule.scheduleJob('*/5 * * * *', () => {
+  schedule.scheduleJob('*/15 * * * *', () => {
     axios
       .get(
         JHUAPI +
@@ -295,7 +299,7 @@ get1();
 get2();
 
 app.get("/", (req, res) => {
-  res.send('Status: 451')
+  res.send('Status: 251')
 });
 
 let listener = app.listen(8080, function () {
