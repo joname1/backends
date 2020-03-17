@@ -3,7 +3,6 @@ const request = require("superagent");
 const axios = require("axios");
 const utils = require("./utils");
 const fs = require('fs');
-const path = require('path');
 const schedule = require('node-schedule');
 
 const app = express();
@@ -129,7 +128,7 @@ app.get("/api/v2/ncov_cases/timeline/page=:id", (req, res) => {
       };
 
       let objs = JSON.stringify(rebuild)
-      fs.writeFile(`${__dirname}` + '/time' + req.params.id + '.json', objs, 'utf8', () => {
+      fs.writeFile('/tmp' + '/time' + req.params.id + '.json', objs, 'utf8', () => {
         console.log('ok+' + new Date())
       });
       res.send(rebuild);
@@ -181,7 +180,7 @@ app.get("/api/v2/ncov_cases/2", (req, res) => {
 
 //定时器
 const get0 = () => {
-  schedule.scheduleJob('*/15 * * * *', () => {
+  schedule.scheduleJob('*/30 * * * *', () => {
     axios.get('https://m.sm.cn/api/rest?format=json&method=Huoshenshan.healingLocal&uc_param_str=gi').then((i) => {
       let today = {
         time: i.data.time,
@@ -214,7 +213,7 @@ const get0 = () => {
 }
 
 const get1 = () => {
-  schedule.scheduleJob('*/15 * * * *', () => {
+  schedule.scheduleJob('*/30 * * * *', () => {
     axios
       .get(
         JHUAPI +
@@ -249,14 +248,14 @@ const get1 = () => {
 
         let objs = JSON.stringify(rebuild)
 
-        fs.writeFile('/tmp/2.json', objs, 'utf8', () => {
+        fs.writeFile('/tmp/1.json', objs, 'utf8', () => {
           console.log('ok+' + new Date())
         });
       });
   });
 }
 const get2 = () => {
-  schedule.scheduleJob('*/15 * * * *', () => {
+  schedule.scheduleJob('*/30 * * * *', () => {
     axios
       .get(
         JHUAPI +
