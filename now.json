@@ -3,9 +3,6 @@
     "builds": [{
             "src": "./index.js",
             "use": "@now/node-server"
-    },{
-            "src": "*.json",
-            "use": "@now/static"
     }],
     "routes": [
         {

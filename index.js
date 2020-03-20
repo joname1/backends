@@ -76,18 +76,12 @@ app.get("/api/getCommunity", (req, res) => {
   let sreq = request.get(HostAPI + req.originalUrl);
   sreq.pipe(res);
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  sreq.on("end", () => {
-    console.log("getCommunity");
-  });
 });
 
 app.get("/api/getStatusByPosition", (req, res) => {
   let sreq = request.get(HostAPI + req.originalUrl);
   sreq.pipe(res);
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  sreq.on("end", () => {
-    console.log("getStatusByPosition");
-  });
 });
 
 //show
